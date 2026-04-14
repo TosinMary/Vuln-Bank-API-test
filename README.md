@@ -1,8 +1,8 @@
 📌 Overview
 
-This repository contains a detailed API testing assessment conducted on the Vulnerable Band API using Postman.
+This repository contains a detailed API testing assessment conducted on the Vuln_BanK using Postman.
 
-The assessment focuses on validating API functionality, identifying defects, and uncovering potential vulnerabilities through a structured and user-centric QA approach.
+The assessment focuses on validating API and Backend functionality, identifying defects, and uncovering potential vulnerabilities through a structured and user-centric QA approach.
 
 🎯 Testing Objectives
 Ensure all API endpoints function as expected
