@@ -1,0 +1,1578 @@
+{
+  "info": {
+    "_postman_id": "e8509430-fa5b-40de-8263-a2b5b4774500",
+    "name": "vuln-bank",
+    "description": "# **API Testing Overview**\n\nThis Postman collection contains a comprehensive set of API tests designed to validate the **functional behavior, security, and reliability** of the vuln-bank application.\n\nThe testing approach focuses on key areas including **authentication and authorization, money transfer operations, input validation, and system resilience** under varying conditions. Each request is structured to simulate real-world user interactions, covering **positive scenarios, negative cases, boundary conditions, and potential abuse patterns**.\n\nIn addition to functional validation, the collection incorporates **security-focused testing aligned with OWASP API Security principles**, aimed at identifying vulnerabilities such as improper authentication, excessive data exposure, and lack of rate limiting.\n\nThe objective of this collection is to:\n\n1\\. Ensure API endpoints behave as expected under normal and edge conditions\n\n2\\. Identify defects and security risks that could impact users or system integrity\n\n3\\. Provide clear, reproducible test cases with structured request payloads and responses\n\nThis collection serves as both a **validation tool and a documentation artifact**, supporting effective reporting of findings and risk prioritization",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "42497516",
+    "_collection_link": "https://go.postman.co/collection/42497516-e8509430-fa5b-40de-8263-a2b5b4774500?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register New User",
+          "item": [
+            {
+              "name": "Register new user with valid credential",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "let userName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+                      "pm.collectionVariables.set(\"username\", userName);\r",
+                      "\r",
+                      "\r",
+                      "let password = \"password1234\";\r",
+                      "pm.collectionVariables.set(\"password\", password);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.collectionVariables.set(\"validUsername\", pm.response.json().debug_data.username);\r",
+                      "\r",
+                      "pm.test(\"Check if registration was successful\", function () {\r",
+                      "    pm.expect(pm.response.json().status).to.eql(\"success\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"status code is 200\", ()=>{\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "})\r",
+                      "\r",
+                      "pm.test(\"response time is less than 500ms\", ()=>{\r",
+                      "    pm.expect(pm.response.responseTime).to.be.below(500);\r",
+                      "    })\r",
+                      "\r",
+                      "pm.test(\"CollectionVariable username is equal to response body usernamr\",()=>{\r",
+                      "    pm.expect(pm.collectionVariables.get(\"username\")).to.eql(pm.response.json().debug_data.username);\r",
+                      "})\r",
+                      "\r",
+                      "pm.test(\"CollectionVariable password is equal to response body password\",()=>{\r",
+                      "    pm.expect(pm.collectionVariables.get(\"password\")).to.eql(pm.response.json().debug_data.password);\r",
+                      "})\r",
+                      "\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"{{username}}\",\r\n  \"password\": \"{{password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate registering new user fails with already existing username and new password",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "//New password for the user registration.\r",
+                      "let newpassword = \"pass1234567\";\r",
+                      "pm.collectionVariables.set(\"newpassword\", newpassword);\r",
+                      "\r",
+                      "\r",
+                      "\r",
+                      "\r",
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"{{validUsername}}\",\r\n  \"password\": \"{{newpassword}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate registering user fails when username field contains only whitespace characters",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"           \",\r\n  \"password\": \"{{newpassword}}\"\r\n}  ",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate registering user fails with empty password",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"yualll\",\r\n  \"password\": \"\"\r\n}  ",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate registering user fails with empty password and username",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"    \",\r\n  \"password\": \"  \"\r\n}  ",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate registering user fails when username and password field contains only whitespace characters",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"                \",\r\n  \"password\": \" \"\r\n}  ",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate registering user fails with only special characters as username",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"!@#~$%^\",\r\n  \"password\": \"{{newpassword}}\"\r\n}  ",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate that user registration fails when the username is less than 3 characters.",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"so\",\r\n  \"password\": \"{{newpassword}}\"\r\n}  ",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate that user registration fails when the username is more than 25 characters.",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"Tohjvwjdbil;ojewa;ohfliabRKbfilahilhaklwiufvguahbkdbjkujn\",\r\n  \"password\": \"{{newpassword}}\"\r\n}  ",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate that user registration fails when the password is less than 8 characters.",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "let userName2 = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+                      "pm.collectionVariables.set(\"username2\", userName2);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"{{username2}}\",\r\n  \"password\": \"12e\"\r\n}  ",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Register new user with invalid API request call \"GET\"",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "let userName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+                      "pm.collectionVariables.set(\"username\", userName);\r",
+                      "\r",
+                      "\r",
+                      "let password = \"password1234\";\r",
+                      "pm.collectionVariables.set(\"password\", password);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.collectionVariables.set(\"validUsername\", pm.response.json().debug_data.username);\r",
+                      "\r",
+                      "pm.test(\"Check if registration was successful\", function () {\r",
+                      "    pm.expect(pm.response.json().status).to.eql(\"success\");\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"status code is 200\", ()=>{\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "})"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"{{username}}\",\r\n  \"password\": \"{{password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate that user registration generated an authentication token in response body",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "let userName3 = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+                      "pm.collectionVariables.set(\"usernam32\", userName3);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"{{username3}}\",\r\n  \"password\": \"{{password}}\"\r\n}  ",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "User Login",
+          "item": [
+            {
+              "name": "Validate login with valid credentials",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "let resbody = pm.response.json();\r",
+                      "pm.test(\"Status code is 200\", function () {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "    })\r",
+                      "\r",
+                      "pm.test(\"Username is similar to response body username\",()=>{\r",
+                      "    pm.expect(resbody.debug_info.username).to.eql(\"Ayla\")\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Login is successful\", ()=>{\r",
+                      "    pm.expect(resbody.message).to.eql(\"Login successful\")\r",
+                      "})\r",
+                      "\r",
+                      "pm.test(\"Validate response body\",()=>{\r",
+                      "    pm.expect(resbody).to.have.property(\"accountNumber\");\r",
+                      "    pm.expect(resbody).to.have.property(\"isAdmin\");\r",
+                      "    pm.expect(resbody).to.have.property(\"message\");\r",
+                      "    pm.expect(resbody).to.have.property(\"status\");\r",
+                      "    pm.expect(resbody).to.have.property(\"token\");\r",
+                      "\r",
+                      "})"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"{{username}}\",\r\n  \"password\": \"{{password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/login",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate login with Invalid credentials",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"Lagos\",\r\n  \"password\": \"lagos\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/login",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate login with valid username and invalid password",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"{{username}}\",\r\n  \"password\": \"pass\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/login",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate login with invalid username and valid password",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"log\",\r\n  \"password\": \"{{password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/login",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate login with valid username and empty password",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"{{username}}\",\r\n  \"password\": \"\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/login",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Validate login with empty username and valid password",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"\",\r\n  \"password\": \"{{password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/login",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Money Transfer",
+      "item": [
+        {
+          "name": "Validate successful money transfer with valid credential",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"45267447\",\r\n  \"amount\": 100,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validated that Money Transfer is successful with valid description stored in response body.",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"45267447\",\r\n  \"amount\": 100,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate successful money transfer with sender actual debit amount in response body",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"45267447\",\r\n  \"amount\": 100,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate sender balance after successful transfer in response body",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"45267447\",\r\n  \"amount\": 100,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate sender balance after successful transfer in response body",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"45267447\",\r\n  \"amount\": 100,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate successful money transfer accepts numeric account number format only",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"AB267447\",\r\n  \"amount\": 100,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate successful money transfer does not accepts special characters in account number",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"!@#267447\",\r\n  \"amount\": 100,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate successful money transfer does not accept account number below 10 digit length",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"67447\",\r\n  \"amount\": 100,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate successful money transfer does not accept account number above 10 digit length",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"674471234567\",\r\n  \"amount\": 100,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate transfer amount does not exceed sender available balance",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"674471234567\",\r\n  \"amount\": 100000000,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate user cannot successfully make a zero amount money transfer",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"6744712345\",\r\n  \"amount\": 0,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate user cannot successfully make a negative amount transfer",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"6744712345\",\r\n  \"amount\": -100,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate that transfer amount is digits only (no decimals, letters, or special chars",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"6744712345\",\r\n  \"amount\": AB@#200,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate money transfer is unsuccessful with unauthorization (No Token/Password)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"to_account\": \"6744712345\",\r\n  \"amount\": 200,\r\n  \"description\": \"upkeep\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/transfer",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "transfer"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "File Upload",
+      "item": [
+        {
+          "name": "Validate successful upload for image file (JPEG)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profile_picture",
+                  "description": "JPEG file upload",
+                  "type": "file",
+                  "uuid": "1e70dcd2-171e-4510-b93b-8044b2bf675e",
+                  "src": "/C:/Users/Tosin/Downloads/Tosin Bamidele.jpeg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/upload_profile_picture",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "upload_profile_picture"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate successful upload for PDF files",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profile_picture",
+                  "description": "PDF file upload",
+                  "type": "file",
+                  "uuid": "1e70dcd2-171e-4510-b93b-8044b2bf675e",
+                  "src": "/C:/Users/Tosin/Downloads/Akinloye Jumoke Christiana (2).pdf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/upload_profile_picture",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "upload_profile_picture"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate successful upload for PNG files",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profile_picture",
+                  "description": "PNG file upload",
+                  "type": "file",
+                  "uuid": "1e70dcd2-171e-4510-b93b-8044b2bf675e",
+                  "src": "/C:/Users/Tosin/Downloads/HNG_Certificate.png"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/upload_profile_picture",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "upload_profile_picture"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate upload unsuccessful with empty file attached",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profile_picture",
+                  "description": "missing file",
+                  "type": "file",
+                  "uuid": "1e70dcd2-171e-4510-b93b-8044b2bf675e",
+                  "value": null
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/upload_profile_picture",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "upload_profile_picture"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate upload unsuccessful when unsupported file (EXE) is uploaded",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profile_picture",
+                  "description": "EXE file",
+                  "type": "file",
+                  "uuid": "1e70dcd2-171e-4510-b93b-8044b2bf675e",
+                  "src": "/C:/Users/Tosin/Downloads/Postman (x64) (1).exe"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/upload_profile_picture",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "upload_profile_picture"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate successful file upload below file size limit of 10MB",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profile_picture",
+                  "description": "file below 10mb ",
+                  "type": "file",
+                  "uuid": "1e70dcd2-171e-4510-b93b-8044b2bf675e",
+                  "src": "/C:/Users/Tosin/Downloads/Internal Technical Training Schedules.pdf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/upload_profile_picture",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "upload_profile_picture"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate unsuccessful file upload above file size limit of 10MB",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profile_picture",
+                  "description": "file above 10mb ",
+                  "type": "file",
+                  "uuid": "1e70dcd2-171e-4510-b93b-8044b2bf675e",
+                  "src": "/C:/Users/Tosin/Downloads/Who moved my cheese.pdf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/upload_profile_picture",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "upload_profile_picture"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate successful file upload for multiple similar files at once (PDF)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profile_picture",
+                  "description": "file 1 PDF",
+                  "type": "file",
+                  "uuid": "1e70dcd2-171e-4510-b93b-8044b2bf675e",
+                  "src": "/C:/Users/Tosin/Downloads/Bamidele Tosin Mary QA Engineer.pdf"
+                },
+                {
+                  "key": "profile_picture",
+                  "description": "file 2 PDF",
+                  "type": "file",
+                  "uuid": "59184c47-ac20-46b6-81c7-75f5d5baa224",
+                  "src": "/C:/Users/Tosin/Downloads/Jumoke_Christiana_CV_Formatted.pdf"
+                },
+                {
+                  "key": "profile_picture",
+                  "description": "file 3 PDF",
+                  "type": "file",
+                  "uuid": "653f3332-9278-4bd4-9721-eebbc097cbd7",
+                  "src": "/C:/Users/Tosin/Downloads/Individual Account Opening form(1).pdf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/upload_profile_picture",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "upload_profile_picture"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate successful file upload for multiple mixture of files at once (PDF, JPEG, PNG, EXE)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profile_picture",
+                  "description": "file 1 PDF",
+                  "type": "file",
+                  "uuid": "1e70dcd2-171e-4510-b93b-8044b2bf675e",
+                  "src": "/C:/Users/Tosin/Downloads/Jumoke_Christiana_CV_Formatted.pdf"
+                },
+                {
+                  "key": "profile_picture",
+                  "description": "file 2 PNG",
+                  "type": "file",
+                  "uuid": "59184c47-ac20-46b6-81c7-75f5d5baa224",
+                  "src": "/C:/Users/Tosin/Downloads/HNG_Certificate.png"
+                },
+                {
+                  "key": "profile_picture",
+                  "description": "file 3 JPEG",
+                  "type": "file",
+                  "uuid": "653f3332-9278-4bd4-9721-eebbc097cbd7",
+                  "src": "/C:/Users/Tosin/Downloads/Bammy Tee.jpeg"
+                },
+                {
+                  "key": "profile_picture",
+                  "description": "file 4 EXE",
+                  "type": "file",
+                  "uuid": "efd0de6b-4f52-4673-bf8d-d65ab2e7a099",
+                  "src": "/C:/Users/Tosin/Downloads/Postman (x64) (1).exe"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/upload_profile_picture",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "upload_profile_picture"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate successful file upload for multiple similar files",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profile_picture",
+                  "description": "file 1 PDF",
+                  "type": "file",
+                  "uuid": "1e70dcd2-171e-4510-b93b-8044b2bf675e",
+                  "src": "/C:/Users/Tosin/Downloads/Tosin Nin (1).pdf"
+                },
+                {
+                  "key": "profile_picture",
+                  "description": "file 2 PDF",
+                  "type": "file",
+                  "uuid": "59184c47-ac20-46b6-81c7-75f5d5baa224",
+                  "src": "/C:/Users/Tosin/Downloads/Bamidele Tosin Mary QA Engineer.pdf"
+                },
+                {
+                  "key": "profile_picture",
+                  "description": "file 3 PDF",
+                  "type": "file",
+                  "uuid": "653f3332-9278-4bd4-9721-eebbc097cbd7",
+                  "src": "/C:/Users/Tosin/Downloads/Akinloye Jumoke Christiana.pdf"
+                },
+                {
+                  "key": "profile_picture",
+                  "description": "file 4 PDF",
+                  "type": "file",
+                  "uuid": "efd0de6b-4f52-4673-bf8d-d65ab2e7a099",
+                  "src": "/C:/Users/Tosin/Downloads/Jumoke_Christiana_CV_Formatted.pdf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/upload_profile_picture",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "upload_profile_picture"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Bill Payment",
+      "item": [
+        {
+          "name": "Validate Bill payment is successful with valid credentials",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"biller_id\": 1,\r\n  \"amount\": 100,\r\n  \"payment_method\": \"balance\",\r\n  \"card_id\": 1234567891,\r\n  \"description\": \"Monthly water bill\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/bill-payments/create",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "bill-payments",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validate Bill payment is successful with valid credentials Copy",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"biller_id\": 1,\r\n  \"amount\": 100,\r\n  \"payment_method\": \"balance\",\r\n  \"card_id\": 1234567891,\r\n  \"description\": \"Monthly water bill\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/bill-payments/create",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "bill-payments",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "username",
+      "value": "Arvel"
+    },
+    {
+      "key": "password",
+      "value": "password1234"
+    },
+    {
+      "key": "validUsername",
+      "value": "Deanna"
+    },
+    {
+      "key": "newpassword",
+      "value": "pass1234567"
+    },
+    {
+      "key": "username2",
+      "value": "Hildegard"
+    },
+    {
+      "key": "usernam32",
+      "value": "Jaleel"
+    },
+    {
+      "key": "username5",
+      "value": "Ephraim"
+    }
+  ]
+}
