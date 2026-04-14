@@ -27,14 +27,17 @@ Functional Testing
 Endpoint validation across all CRUD operations
 Request payload verification
 Response correctness and consistency
+
 Negative Testing
 Invalid and malformed inputs
 Missing required parameters
 Unauthorized and improper access attempts
+
 Response Validation
 HTTP status code verification
 Response schema and structure validation
 Data accuracy checks
+
 Security Testing 
 Input validation flaws
 Exposure of internal errors
